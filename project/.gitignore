@@ -1,0 +1,3 @@
+venv/
+*generate_secrets.py
+*.env

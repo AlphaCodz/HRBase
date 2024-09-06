@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-import uuid, enum
+import uuid, enum, random, string
 
 
 class CustomUserManager(BaseUserManager):
@@ -35,6 +35,7 @@ class User(AbstractUser):
     address = models.CharField(max_length=300, null=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login = models.TimeField(auto_now=True)
+    username = models.CharField(max_length=7, null=True)
     
     REQUIRED_FIELDS = []
     USERNAME_FIELD = 'email'
@@ -47,5 +48,7 @@ class User(AbstractUser):
     def save(self, *args, **kwargs):
         if self.password:
             self.set_password(self.password)
+        if not self.username:
+            self.username = "".join(random.choices(string.ascii_lowercase + string.digits, k=7))
         super(User, self).save(*args, **kwargs)
         

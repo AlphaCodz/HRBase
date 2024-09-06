@@ -26,6 +26,9 @@ class Organisation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    def __str__(self):
+        return self.name
+    
 
 class Job(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': Role.USER})
@@ -38,11 +41,17 @@ class Job(models.Model):
     
     objects = JobManager()
 
+    def __str__(self):
+        return self.title
+
 
 class Application(models.Model):
     applicant = models.ManyToManyField(User, limit_choices_to={'role': Role.USER}, related_name='job_applicants')
     job = models.OneToOneField(Job, on_delete=models.CASCADE)
     skill_description = models.TextField()
     resume = models.FileField(upload_to='resumes')
-    status = models.CharField(choices=ApplicationStatus, default=ApplicationStatus.PENDING)
+    status = models.CharField(choices=ApplicationStatus.choices, default=ApplicationStatus.PENDING)
+    
+    def __str__(self):
+        return self.status
     

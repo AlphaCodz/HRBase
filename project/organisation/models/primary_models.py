@@ -1,12 +1,12 @@
 from django.db import models
 from entity.models.base_models import User, Role
 from django.utils import timezone
+import random, string
 
 class ApplicationStatus(models.TextChoices):
     REJECTED = "REJECTED", "Rejected"
     ACCEPTED = "ACCEPTED", "Accepted"
     PENDING = "PENDING", "Pending"
-
 
 
 class JobManager(models.Manager):
@@ -21,13 +21,18 @@ class Organisation(models.Model):
     location = models.TextField()
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
     latitude = models.DecimalField(max_digits=10, decimal_places=6)
-    admin = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': Role.ORG_ADMIN})
+    admin = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': Role.USER})
     staff_access_code = models.CharField(max_length=3)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
         return self.name
+    
+    def save(self, *args, **kwargs):
+        if not self.staff_access_code:
+            self.staff_access_code = "".join(random.choices(string.ascii_uppercase + string.digits, k=3))
+        super(Organisation, self).save(*args, **kwargs)
     
 
 class Job(models.Model):

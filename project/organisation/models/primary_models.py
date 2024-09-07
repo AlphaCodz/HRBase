@@ -33,7 +33,7 @@ class Organisation(models.Model):
         if not self.staff_access_code:
             self.staff_access_code = "".join(random.choices(string.ascii_uppercase + string.digits, k=3))
         super(Organisation, self).save(*args, **kwargs)
-    
+
 
 class Job(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': Role.USER})
@@ -43,6 +43,7 @@ class Job(models.Model):
     max_applicants = models.IntegerField(default=1)
     start_date = models.DateField(default=timezone.now)
     end_date = models.DateField()
+    applicant_count = models.IntegerField(default=0)
     
     objects = JobManager()
 
@@ -56,7 +57,6 @@ class Application(models.Model):
     skill_description = models.TextField()
     resume = models.FileField(upload_to='resumes')
     status = models.CharField(choices=ApplicationStatus.choices, default=ApplicationStatus.PENDING)
-    
+
     def __str__(self):
         return self.status
-    

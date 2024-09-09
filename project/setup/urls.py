@@ -4,7 +4,7 @@ from rest_framework import permissions, routers
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from entity.views.authentication import SignUpUser, SignInUserView, CustomTokenBlacklistView
-from organisation.views.primary_views import OrganisationViewSet
+from organisation.views.primary_views import OrganisationViewSet, JobViewSet
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenBlacklistView
 
@@ -23,13 +23,14 @@ schema_view = get_schema_view(
 )
 
 router = routers.DefaultRouter()
-router.register('signup', SignUpUser, basename='signup')
-router.register('org/create', OrganisationViewSet, basename='organisation')
+router.register('account', SignUpUser, basename='Signup')
+router.register('org/create', OrganisationViewSet, basename='Organisation')
+router.register('jobs', JobViewSet, basename='Job')
 
 urlpatterns = [
     path('youshouldnotbeherechief/', admin.site.urls),
     path('api/', include(router.urls)),
-    path('login/', SignInUserView.as_view(), name='login-user'),
+    path('api/account/login/', SignInUserView.as_view(), name='login-user'),
     path('api/token/blacklist/', CustomTokenBlacklistView.as_view(), name='token_blacklist'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),

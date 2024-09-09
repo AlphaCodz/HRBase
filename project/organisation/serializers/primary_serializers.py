@@ -13,17 +13,27 @@ class OrganisationSerializer(serializers.ModelSerializer):
         
 
 class JobSerializer(serializers.ModelSerializer):
+    applicant_count = serializers.IntegerField(read_only=True)
+    
     class Meta:
         model = Job
         fields = ['created_by', "organisation", "title", "description", "max_applicants", "start_date", "end_date", "applicant_count"]
 
+    def validated_created_by(self, value):
+        try:
+            User.objects.get(id=value.id)
+        except User.DoesNotExist:
+            logger.error(f"An Error Occured", exc_info=True)
+            raise serializers.ValidationError("This User Does Not Exist")
+        return value
+        
     def validate_organisation(self, value):
         try:
             # Check if the Organisation exists
             Organisation.objects.get(id=value.id)
         except Organisation.DoesNotExist:
-            raise serializers.ValidationError(f"This Organisation '{value}' does not exist.")
             logger.error(f"An Error Occured", exc_info=True)
+            raise serializers.ValidationError(f"This Organisation '{value}' does not exist.")
         return value
     
     def validate_end_date(self, value):

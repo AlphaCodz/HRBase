@@ -16,11 +16,11 @@ class CustomResponseMiddleware(MiddlewareMixin):
 
         # Check if it's an error (e.g., 4xx or 5xx)
         if 200 <= response.status_code < 300:
-            status = "success"
+            status = True
             message = "Request Successful"
             data = response.data if hasattr(response, 'data') else {}
         else:
-            status = "error"
+            status = True
             message = response.reason_phrase or "An error occurred"
             data = response.data if hasattr(response, 'data') else {}
 
@@ -44,14 +44,14 @@ class CustomResponseMiddleware(MiddlewareMixin):
         # Handle IntegrityError and other exceptions explicitly
         if isinstance(exception, IntegrityError):
             return JsonResponse({
-                'status': 'error',
+                'status': False,
                 'message': str(exception),  # Return the detailed exception message
                 'data': traceback.format_exc()  # Optional: full stack trace in response (for debugging)
             }, status=400)
 
         # For non-DRF handled exceptions
         return JsonResponse({
-            'status': 'error',
+            'status': False,
             'message': str(exception),  # Return the exception message
             'data': traceback.format_exc()  # Optional: stack trace for debugging
         }, status=500)

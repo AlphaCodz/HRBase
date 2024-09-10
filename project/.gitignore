@@ -2,6 +2,6 @@ venv/
 *generate_secrets.py
 *.env
 # Elastic Beanstalk Files
-.elasticbeanstalk/*
-!.elasticbeanstalk/*.cfg.yml
-!.elasticbeanstalk/*.global.yml
+.elasticbeanstalk/
+
+staticfiles/

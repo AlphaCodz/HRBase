@@ -20,7 +20,7 @@ class CustomResponseMiddleware(MiddlewareMixin):
             message = "Request Successful"
             data = response.data if hasattr(response, 'data') else {}
         else:
-            status = True
+            status = False
             message = response.reason_phrase or "An error occurred"
             data = response.data if hasattr(response, 'data') else {}
 

@@ -30,6 +30,7 @@ router.register('jobs', JobViewSet, basename='Job')
 urlpatterns = [
     path('youshouldnotbeherechief/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('admin/defender/', include('defender.urls')), 
     path('api/account/login/', SignInUserView.as_view(), name='login-user'),
     path('api/token/blacklist/', CustomTokenBlacklistView.as_view(), name='token_blacklist'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

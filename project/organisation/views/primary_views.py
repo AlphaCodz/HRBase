@@ -1,12 +1,21 @@
-from . import Organisation, Application, Job, OrganisationSerializer, ApplicationSerializer, JobSerializer
+from . import (
+    # Models
+    Organisation, Application, Job, Staff, User,
+    
+    # Serializers
+    OrganisationSerializer, ApplicationSerializer, JobSerializer, StaffSerializer, UserSerializer)
+
 from rest_framework import viewsets, response, status
 from rest_framework.decorators import action
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+import logging
 
+logger = logging.getLogger(__name__)
 
 class OrganisationViewSet(viewsets.ModelViewSet):
     queryset = Organisation.objects.select_related("admin")
     serializer_class = OrganisationSerializer
-
 
 
 class JobViewSet(viewsets.ViewSet):
@@ -58,3 +67,125 @@ class JobViewSet(viewsets.ViewSet):
         
         job.delete()
         return response.Response("Job Deleted Successfully!", status=status.HTTP_204_NO_CONTENT)
+    
+    
+class JoinOrganization(viewsets.ViewSet):
+    def get_queryset(self):
+        return Staff.objects.select_related("organization").prefetch_related("employee")
+    
+    def get_object(self, pk):
+        try:
+            Staff.objects.get(pk=pk)
+        except Staff.DoesNotExist:
+            return response.Http404
+        
+    def get_serializer(self, *args, **kwargs):
+        return StaffSerializer(*args, **kwargs)
+        
+    @action(detail=False, methods=['post'], url_path='join', url_name='join-organisation')
+    def join_organisation(self, request):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return response.Response(serializer.data, status=status.HTTP_201_CREATED)
+        return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=True, methods=['get'], url_path='all_staffs', url_name='all-org-staffs')
+    def get_all_my_staffs(self, request, pk=None):        
+        if not pk:
+            return response.Response("You need to provide an Organisation ID", status=status.HTTP_400_BAD_REQUEST)
+        try:
+            organisation = Organisation.objects.get(id=pk)
+        except Organisation.DoesNotExist:
+            logger.error("An Error Occured", exc_info=True)
+            return response.Response("Organisation not found", status=status.HTTP_404_NOT_FOUND)
+        
+        staff_members = Staff.objects.filter(organisation=organisation)
+        users = User.objects.filter(organization_employees__in=staff_members)
+        
+        user_serializers = UserSerializer(users, many=True)
+        return response.Response(user_serializers.data, status=status.HTTP_200_OK)
+    
+    
+    @action(detail=True, methods=['post'], url_path='remove_staff', url_name='remove-staff')
+    def remove_staff(self, request, pk=None):
+        
+        """
+        This endpoint removes the staff from the Organisation without deleting the staff account.
+        """
+        if not pk:
+            return response.Response("You need to provide an Organisation ID", status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            organisation = Organisation.objects.get(id=pk)
+        except Organisation.DoesNotExist:
+            logger.error("An Error Occured", exc_info=True)
+            return response.Response("Organisation not found", status=status.HTTP_404_NOT_FOUND)
+        
+        employee_id = request.data.get('employee_id')
+        if not employee_id:
+            return response.Response("You need to provide a Employee ID", status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            employee = User.objects.get(id=employee_id)
+        except User.DoesNotExist:
+            logger.error("An Error Occured", exc_info=True)
+            return response.Response("Employee Does Not Exist")
+        
+        try:
+            staff = Staff.objects.get(employee=employee, organisation=organisation)
+        except Staff.DoesNotExist:
+            logger.error("An Error Occured", exc_info=True)
+            return response.Response("Staff not found in this organisation", status=status.HTTP_404_NOT_FOUND)
+        
+        
+        # Remove the staff member from the organisation
+        staff.organisation = None
+        staff.save()
+
+        # Remove the staff member from the employee ManyToManyField
+        staff.employee.remove(User.objects.get(id=employee_id))
+        
+        return response.Response("Staff removed successfully", status=status.HTTP_200_OK)
+        
+
+
+class JobApplication(viewsets.ViewSet):
+    def get_queryset(self):
+        return Application.objects.select_related("job").prefetch_related("applicant")
+    
+    def get_object(self, pk):
+        try:
+            Job.objects.get(id=pk)
+        except Job.DoesNotExist:
+            return response.Http404
+    
+    def get_serializer(self, *args, **kwargs):
+        return ApplicationSerializer(*args, **kwargs)
+    
+    @action(detail=True, methods=['post'], url_path='apply', url_name='submit-application')
+    def submit_application(self, request, pk=None):
+        # Ensure a Job ID is provided
+        if pk is None:
+            return response.Response({"error": "Job ID is required!"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Fetch the job object
+        try:
+            job = Job.objects.get(id=pk)
+        except Job.DoesNotExist:
+            return response.Response({"error": "Job not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Get the serializer and validate the request data
+        serializer = ApplicationSerializer(data=request.data)
+        if serializer.is_valid():
+            # Create the application
+            serializer.save(applicant=request.user, job=job)
+            return response.Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    @action(detail=False, methods=['get'], url_path='all_applications', url_name='applications')
+    def all_applications(self, request):
+        queryset = self.get_queryset()
+        serializers = self.get_serializer(queryset, many=True)
+        return response.Response(serializers.data, status=status.HTTP_200_OK)

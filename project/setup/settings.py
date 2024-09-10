@@ -31,19 +31,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG")
+DEBUG = os.getenv("DEBUG") == "True"
 
-if DEBUG == False:
-    SECURE_BROWSER_XSS_FILTER = True
-    X_FRAME_OPTIONS = 'DENY'
-    # SECURE_SSL_REDIRECT= True
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # If you want subdomains to also follow HSTS
-    SECURE_HSTS_PRELOAD = True  # For browser preload lists
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_REFERRER_POLICY = 'origin'
+# if not DEBUG:
+    # SECURE_BROWSER_XSS_FILTER = True
+    # X_FRAME_OPTIONS = 'DENY'
+    # # SECURE_SSL_REDIRECT = True  # Redirect HTTP to HTTPS
+    # SECURE_HSTS_SECONDS = 31536000  # 1 year
+    # SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Apply HSTS to all subdomains
+    # SECURE_HSTS_PRELOAD = True  # Include in HSTS preload list
+    # SECURE_CONTENT_TYPE_NOSNIFF = True
+    # SESSION_COOKIE_SECURE = True  # Ensure cookies are only sent over HTTPS
+    # CSRF_COOKIE_SECURE = True  # Ensure CSRF cookies are only sent over HTTPS
+    # SECURE_REFERRER_POLICY = 'origin'  # Control referrer header for privacy
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 

@@ -4,7 +4,7 @@ from rest_framework import permissions, routers
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from entity.views.authentication import SignUpUser, SignInUserView, CustomTokenBlacklistView
-from organisation.views.primary_views import OrganisationViewSet, JobViewSet
+from organisation.views.primary_views import OrganisationViewSet, JobViewSet, JoinOrganization, JobApplication
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenBlacklistView
 
@@ -26,6 +26,8 @@ router = routers.DefaultRouter()
 router.register('account', SignUpUser, basename='Signup')
 router.register('org/create', OrganisationViewSet, basename='Organisation')
 router.register('jobs', JobViewSet, basename='Job')
+router.register('org/staff', JoinOrganization, basename='organisation-staff')
+router.register('jobs', JobApplication, basename='job-applications')
 
 urlpatterns = [
     path('youshouldnotbeherechief/', admin.site.urls),

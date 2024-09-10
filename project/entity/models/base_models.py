@@ -28,10 +28,16 @@ class Role(models.TextChoices):
     
 
 class User(AbstractUser):
+    ROLES = (
+        ("USER", "User"),
+        ("ORG_ADMIN", "Organisation Admin"),
+        ("ORG_STAFF", "Organisation Staff"),
+        ("ORG_HR", "HR Representative"),
+    )
     id = models.UUIDField(default=uuid.uuid4, primary_key=True)
     name = models.CharField(max_length=350, null=False, blank=False)
     email = models.EmailField(unique=True)
-    role = models.CharField(max_length=20, choices=Role.choices, default=Role.USER)
+    role = models.CharField(max_length=20, choices=ROLES, default="USER")
     address = models.CharField(max_length=300, null=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login = models.TimeField(auto_now=True)
@@ -51,4 +57,3 @@ class User(AbstractUser):
         if not self.username:
             self.username = "".join(random.choices(string.ascii_lowercase + string.digits, k=7))
         super(User, self).save(*args, **kwargs)
-        

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from . import Application, Organisation, Job, User
+from . import Application, Organisation, Job, User, Staff, Role
 import logging
 from django.utils import timezone
 
@@ -17,7 +17,7 @@ class JobSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Job
-        fields = ['created_by', "organisation", "title", "description", "max_applicants", "start_date", "end_date", "applicant_count"]
+        fields = ['id', 'created_by', "organisation", "title", "description", "max_applicants", "start_date", "end_date", "applicant_count"]
 
     def validated_created_by(self, value):
         try:
@@ -72,3 +72,17 @@ class ApplicationSerializer(serializers.ModelSerializer):
         
         instance.save()
         return instance
+    
+    
+class StaffSerializer(serializers.ModelSerializer):
+    org_access_code = serializers.CharField(read_only=True)
+    class Meta:
+        model = Staff
+        fields = ["organisation", "employee", "org_access_code"]
+
+    def validate_staff(self, value):
+        # Check if a user with the given ID and role exists for the singular purpose of returning a customized error message.
+        if not User.objects.filter(id=value, role=Role.USER).exists():
+            logger.error("This User either Doesn't Exist or doesn't have permission to perform this action.")
+            raise serializers.ValidationError("This User either Doesn't Exist or doesn't have permission to perform this action.")
+        return value

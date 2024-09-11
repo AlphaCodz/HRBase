@@ -75,7 +75,7 @@ MIDDLEWARE = [
     'defender.middleware.FailedLoginMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'entity.middleware.custom_response_middleware.CustomResponseMiddleware'
+    'entity.middleware.custom_response_middleware.CustomResponseMiddleware'
 ]
 
 ROOT_URLCONF = 'setup.urls'

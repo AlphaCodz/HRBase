@@ -17,8 +17,7 @@ logger = logging.getLogger(__name__)
 class OrganisationViewSet(viewsets.ModelViewSet):
     queryset = Organisation.objects.select_related("admin")
     serializer_class = OrganisationSerializer
-    permission_classes = [IsHR]
-
+    
 
 class JobViewSet(viewsets.ViewSet):
     def get_queryset(self):
@@ -154,7 +153,4 @@ class JoinOrganization(viewsets.ViewSet):
 class JobApplication(viewsets.ModelViewSet):
     queryset = Application.objects.select_related("job").prefetch_related("applicant")
     serializer_class = ApplicationSerializer
-    
-    
-    
-
+    permission_classes = [IsHR]

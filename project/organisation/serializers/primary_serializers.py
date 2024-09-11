@@ -53,6 +53,25 @@ class ApplicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Application
         fields = ["id", "applicant", "job", "skill_description", "resume", "status"]
+        
+    def create(self, validated_data):
+        # Extract the job and applicant from the validated data
+        job = validated_data.get('job')
+        applicants = validated_data.pop('applicant', None)  # Handle ManyToManyField separately
+
+        # Increment the application_count on the job
+        if job:
+            job.applicant_count += 1
+            job.save()
+
+        # Create the Application instance
+        instance = Application.objects.create(**validated_data)
+
+        # Set the applicants for the application
+        if applicants is not None:
+            instance.applicant.set(applicants)
+
+        return instance
 
 
 class StaffSerializer(serializers.ModelSerializer):

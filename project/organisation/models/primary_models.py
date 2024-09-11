@@ -4,7 +4,7 @@ from django.utils import timezone
 import random, string
 
 class JobManager(models.Manager):
-    def is_valid(self):
+    def is_open(self):
         today = timezone.now().date()
         return self.filter(start_date__lte=today, end_date__gte=today)
 
@@ -92,11 +92,6 @@ class Application(models.Model):
             models.Index(fields=['job']),       
             models.Index(fields=['status']), # Composite index
         ]
-
-    def save(self, *args, **kwargs):
-        if self.job:
-            self.job.applicant_count += 1
-        super().save(*args, **kwargs)
             
 
 class Staff(models.Model):

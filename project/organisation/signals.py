@@ -1,8 +1,8 @@
 from django.dispatch import receiver
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 import logging
 from django.db import transaction
-from .models.primary_models import Organisation, Staff
+from .models.primary_models import Organisation, Staff, Application
 from entity.models.base_models import User, Role
 
 logger = logging.getLogger(__name__)
@@ -15,6 +15,17 @@ def update_user_role(sender, instance, created, **kwargs):
             with transaction.atomic():
                 admin.role = "ORG_ADMIN"
                 admin.save()
+                
+
+
+@receiver(post_delete, sender=Application)
+def update_applicant_count_on_delete(sender, instance, **kwargs):
+    if instance.job:
+        job = instance.job
+        job.applicant_count -= 1
+        job.save()
+        
+
 
 @receiver(post_save, sender=Staff)
 def update_employee_roles(sender, instance, created, **kwargs):

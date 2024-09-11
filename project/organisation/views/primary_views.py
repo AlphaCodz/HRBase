@@ -5,7 +5,7 @@ from . import (
     # Serializers
     OrganisationSerializer, ApplicationSerializer, JobSerializer, StaffSerializer, UserSerializer)
 
-from rest_framework import viewsets, response, status
+from rest_framework import viewsets, response, status, views
 from rest_framework.decorators import action
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -148,44 +148,7 @@ class JoinOrganization(viewsets.ViewSet):
         
         return response.Response("Staff removed successfully", status=status.HTTP_200_OK)
         
-
-
-class JobApplication(viewsets.ViewSet):
-    def get_queryset(self):
-        return Application.objects.select_related("job").prefetch_related("applicant")
-    
-    def get_object(self, pk):
-        try:
-            Job.objects.get(id=pk)
-        except Job.DoesNotExist:
-            return response.Http404
-    
-    def get_serializer(self, *args, **kwargs):
-        return ApplicationSerializer(*args, **kwargs)
-    
-    @action(detail=True, methods=['post'], url_path='apply', url_name='submit-application')
-    def submit_application(self, request, pk=None):
-        # Ensure a Job ID is provided
-        if pk is None:
-            return response.Response({"error": "Job ID is required!"}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Fetch the job object
-        try:
-            job = Job.objects.get(id=pk)
-        except Job.DoesNotExist:
-            return response.Response({"error": "Job not found"}, status=status.HTTP_404_NOT_FOUND)
-        
-        # Get the serializer and validate the request data
-        serializer = ApplicationSerializer(data=request.data)
-        if serializer.is_valid():
-            # Create the application
-            serializer.save(applicant=request.user, job=job)
-            return response.Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-    @action(detail=False, methods=['get'], url_path='all_applications', url_name='applications')
-    def all_applications(self, request):
-        queryset = self.get_queryset()
-        serializers = self.get_serializer(queryset, many=True)
-        return response.Response(serializers.data, status=status.HTTP_200_OK)
+class JobApplication(viewsets.ModelViewSet):
+    queryset = Application.objects.select_related("job").prefetch_related("applicant")
+    serializer_class = ApplicationSerializer

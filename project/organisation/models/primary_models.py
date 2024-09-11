@@ -66,6 +66,11 @@ class Application(models.Model):
     def __str__(self):
         return self.status
 
+    def save(self, *args, **kwargs):
+        if self.job:
+            self.job.applicant_count += 1
+        super().save(*args, **kwargs)
+            
 
 class Staff(models.Model):
     organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE, null=True)
@@ -79,6 +84,7 @@ class Staff(models.Model):
         if not self.org_access_code:
             self.org_access_code = "".join(random.choices(string.digits + string.ascii_uppercase, k=5))
         # Call the parent class's save method first to save the instance
+
         super().save(*args, **kwargs)
         
         # Update employee roles if this is a new Staff instance

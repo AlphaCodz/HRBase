@@ -53,27 +53,8 @@ class ApplicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Application
         fields = ["id", "applicant", "job", "skill_description", "resume", "status"]
-        
-    def validate_applicant(self, value):
-        try:
-            User.objects.get(id=value)
-        except User.DoesNotExist:
-            raise serializers.ValidationError("This User Does Not Exist")
-            logger.error(f"An Error Occured", exc_info=True)
-        return value
-    
-    def create(self, validated_data):
-        instance = Application(**validated_data)
-        
-        # Increase Job Applicant Count
-        job = instance.job
-        job.applicant_count += 1
-        job.save()
-        
-        instance.save()
-        return instance
-    
-    
+
+
 class StaffSerializer(serializers.ModelSerializer):
     org_access_code = serializers.CharField(read_only=True)
     class Meta:

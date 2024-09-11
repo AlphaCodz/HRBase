@@ -27,7 +27,7 @@ router.register('account', SignUpUser, basename='Signup')
 router.register('org/create', OrganisationViewSet, basename='Organisation')
 router.register('jobs', JobViewSet, basename='Job')
 router.register('org/staff', JoinOrganization, basename='organisation-staff')
-router.register('jobs', JobApplication, basename='job-applications')
+router.register('jobs/apply', JobApplication, basename='job-applications')
 
 urlpatterns = [
     path('youshouldnotbeherechief/', admin.site.urls),
@@ -37,4 +37,7 @@ urlpatterns = [
     path('api/token/blacklist/', CustomTokenBlacklistView.as_view(), name='token_blacklist'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    
+    # Job Application
+    # path('api/jobs/<str:job_id>/apply', JobApplication.as_view(), name="job-application")
 ]

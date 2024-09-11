@@ -51,6 +51,16 @@ class User(AbstractUser):
     def __str__(self):
         return self.name
     
+    class Meta:
+        indexes = [
+            models.Index(fields=['email']),  
+            models.Index(fields=['role']),   
+            models.Index(fields=['date_joined']), 
+            models.Index(fields=['last_login']),  
+            models.Index(fields=['email', 'role']), 
+            models.Index(fields=['date_joined', 'last_login']), 
+        ]
+    
     def save(self, *args, **kwargs):
         if self.password:
             self.set_password(self.password)

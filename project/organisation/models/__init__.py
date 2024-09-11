@@ -1,1 +1,1 @@
-from .primary_models import Application, ApplicationStatus, JobManager, Organisation, Job, Staff
+from .primary_models import Application, JobManager, Organisation, Job, Staff

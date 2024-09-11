@@ -3,12 +3,6 @@ from entity.models.base_models import User, Role
 from django.utils import timezone
 import random, string
 
-class ApplicationStatus(models.TextChoices):
-    REJECTED = "REJECTED", "Rejected"
-    ACCEPTED = "ACCEPTED", "Accepted"
-    PENDING = "PENDING", "Pending"
-
-
 class JobManager(models.Manager):
     def is_valid(self):
         today = timezone.now().date()
@@ -28,6 +22,21 @@ class Organisation(models.Model):
     
     def __str__(self):
         return self.name
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['name']),
+            models.Index(fields=['location']),
+            models.Index(fields=['longitude', 'latitude']),
+            models.Index(fields=['admin']),
+            models.Index(fields=['staff_access_code']),
+            models.Index(fields=['created_at']),
+            models.Index(fields=['updated_at']),
+        ]
+        
+        constraints = [
+            models.UniqueConstraint(fields=['staff_access_code'], name='unique_staff_code'),
+        ]
     
     def save(self, *args, **kwargs):
         if not self.staff_access_code:
@@ -49,6 +58,18 @@ class Job(models.Model):
 
     def __str__(self):
         return self.title
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['created_by']),
+            models.Index(fields=['organisation']),
+            models.Index(fields=['title']),
+            models.Index(fields=['start_date']),
+            models.Index(fields=['end_date']),
+            models.Index(fields=['applicant_count']),
+            models.Index(fields=['created_by', 'organisation']),  # Composite index
+            models.Index(fields=['start_date', 'end_date']),  # Composite index
+        ]
 
 
 class Application(models.Model):
@@ -65,6 +86,12 @@ class Application(models.Model):
 
     def __str__(self):
         return self.status
+    
+    class Meta:
+        indexes = [ 
+            models.Index(fields=['job']),       
+            models.Index(fields=['status']), # Composite index
+        ]
 
     def save(self, *args, **kwargs):
         if self.job:
@@ -79,6 +106,13 @@ class Staff(models.Model):
     
     def __str__(self):
         return self.organisation.name
+    
+    class Meta:
+            indexes = [
+            models.Index(fields=['organisation']),  # Index for querying by organisation
+            models.Index(fields=['org_access_code']),  # Index for querying by org_access_code
+            models.Index(fields=['organisation', 'org_access_code']),  # Composite index for organisation and org_access_code
+        ]
     
     def save(self, *args, **kwargs):
         if not self.org_access_code:

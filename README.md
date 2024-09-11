@@ -70,6 +70,20 @@
 8. **Access the Application**
    - Open a browser and navigate to `http://localhost:8000/` to view the HR Base platform.
    - Admin dashboard: `http://localhost:8000/admin/`
+  
+9. **Deploy App to AWS Elastic BeanStalk**
+    ```bash
+      eb deploy
+    ```
+10. **Confirm Deployment**
+    ```bash
+      eb status
+    ```
+    If there are issues on deployment do
+    ```bash
+         eb logs
+    ```
+    to check the logs for bugs and fix accordingly.
 
 ## API Endpoints
 

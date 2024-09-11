@@ -9,6 +9,7 @@ from rest_framework import viewsets, response, status, views
 from rest_framework.decorators import action
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from organisation.permissions import IsHR
 import logging
 
 logger = logging.getLogger(__name__)
@@ -16,6 +17,7 @@ logger = logging.getLogger(__name__)
 class OrganisationViewSet(viewsets.ModelViewSet):
     queryset = Organisation.objects.select_related("admin")
     serializer_class = OrganisationSerializer
+    permission_classes = [IsHR]
 
 
 class JobViewSet(viewsets.ViewSet):
@@ -152,3 +154,7 @@ class JoinOrganization(viewsets.ViewSet):
 class JobApplication(viewsets.ModelViewSet):
     queryset = Application.objects.select_related("job").prefetch_related("applicant")
     serializer_class = ApplicationSerializer
+    
+    
+    
+

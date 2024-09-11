@@ -2,6 +2,7 @@ from django.db import models
 from entity.models.base_models import User, Role
 from django.utils import timezone
 import random, string
+from django.core.exceptions import ValidationError
 
 class JobManager(models.Manager):
     def is_open(self):
@@ -110,10 +111,16 @@ class Staff(models.Model):
         ]
     
     def save(self, *args, **kwargs):
-        if not self.org_access_code:
-            self.org_access_code = "".join(random.choices(string.digits + string.ascii_uppercase, k=5))
-        # Call the parent class's save method first to save the instance
-
+        # Check if the organisation and org_access_code are available
+        if self.organisation and self.org_access_code:
+            # Fetch the organisation instance 
+            organisation = self.organisation
+            
+            # Compare the access codes
+            if organisation.staff_access_code != self.org_access_code:
+                raise ValidationError("The provided organization access code is incorrect.")
+        
+        # Call the parent class's save method if validation passes
         super().save(*args, **kwargs)
         
         # Update employee roles if this is a new Staff instance
@@ -125,9 +132,7 @@ class Staff(models.Model):
                         with transaction.atomic():
                             employee.role = "ORG_STAFF"
                             employee.save()
-                            # Optionally log this update
-                            # logger.debug(f"Updated role for employee {employee.id} to ORG_STAFF")
+                            logger.debug(f"Updated role for employee {employee.id} to ORG_STAFF")
                     except Exception as e:
-                        # Optionally log the exception
-                        # logger.error(f"Error updating role for employee {employee.id}: {e}", exc_info=True)
+                        logger.error(f"Error updating role for employee {employee.id}: {e}", exc_info=True)
                         pass

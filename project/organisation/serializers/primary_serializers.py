@@ -54,6 +54,20 @@ class ApplicationSerializer(serializers.ModelSerializer):
         model = Application
         fields = ["id", "applicant", "job", "skill_description", "resume", "status"]
         
+    def validate(self, data):
+        job = data.get('job')
+        applicant = data.get('applicant')
+
+        if job and applicant:
+            # Check if the applicant is staff of the organisation that posted the job
+            job_organisation = job.organisation
+            is_staff = job_organisation.staff.filter(id=applicant.id).exists()
+
+            if is_staff:
+                raise ValidationError("Applicants cannot be staff of the organisation that posted the job.")
+
+        return data
+        
     def create(self, validated_data):
         # Extract the job and applicant from the validated data
         job = validated_data.get('job')

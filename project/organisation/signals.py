@@ -17,7 +17,6 @@ def update_user_role(sender, instance, created, **kwargs):
                 admin.save()
                 
 
-
 @receiver(post_delete, sender=Application)
 def update_applicant_count_on_delete(sender, instance, **kwargs):
     if instance.job:
@@ -25,7 +24,6 @@ def update_applicant_count_on_delete(sender, instance, **kwargs):
         job.applicant_count -= 1
         job.save()
         
-
 
 @receiver(post_save, sender=Staff)
 def update_employee_roles(sender, instance, created, **kwargs):

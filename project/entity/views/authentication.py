@@ -76,7 +76,7 @@ class CustomTokenBlacklistView(views.APIView):
             if not refresh_token:
                 return response.Response({"error": "Refresh token is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Blacklist the token
+            # Blacklist the token on logout
             token = RefreshToken(refresh_token)
             token.blacklist()
 
